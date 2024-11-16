@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f1f1f1, #e0e0e0);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+            color: #333;
+        }
+
+        /* Logo Styling */
+        .logo {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #007bff;
+            letter-spacing: 5px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .container {
+            background: #ffffff;
+            max-width: 850px;
+            width: 90%;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #333;
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        label {
+            font-size: 1.1rem;
+            color: #495057;
+            margin-bottom: 10px;
+            display: block;
+            font-weight: 500;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 20px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #495057;
+            font-family: 'Roboto', sans-serif;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 6px rgba(0, 123, 255, 0.4);
+        }
+
+        select {
+            background-color: #ffffff;
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background-color: #007bff;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-family: 'Roboto', sans-serif;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            background-color: #003d80;
+            transform: translateY(2px);
+        }
+
+        .result {
+            margin-top: 30px;
+            font-size: 1.3rem;
+            color: #28a745;
+            text-align: center;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .investment-summary {
+            margin-top: 40px;
+            font-size: 1.1rem;
+            color: #333;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+
+        table, th, td {
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        th {
+            background-color: #007bff;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        td {
+            background-color: #f8f9fa;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            input[type="number"], button, select {
+                font-size: 0.9rem;
+            }
+
+            .result {
+                font-size: 1.1rem;
+            }
+
+            table th, table td {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Logo Outside Form -->
+    <div class="logo">KZ</div>
+
+    <div class="container">
+        <h1>Investment Calculator</h1>
+
+        <label for="years">Number of Years</label>
+        <input type="number" id="years" value="15" placeholder="Enter the number of years" />
+
+        <label for="increment-type">Step-Up Type</label>
+        <select id="increment-type" onchange="updateStepUpValue()">
+            <option value="fixed" selected>Fixed Step-Up (₹)</option>
+            <option value="percentage">Percentage Step-Up (%)</option>
+        </select>
+
+        <label for="increment">Step-Up Value</label>
+        <input type="number" id="increment" value="100" placeholder="Enter the step-up value" />
+
+        <label for="initial-investment">Initial Monthly Investment (₹)</label>
+        <input type="number" id="initial-investment" value="12000" placeholder="Enter the initial monthly investment" />
+
+        <label for="annual-return">Annual Return Rate (%)</label>
+        <input type="number" id="annual-return" value="13" placeholder="Enter the annual return rate" />
+
+        <button onclick="calculateInvestment()">Calculate Final Value</button>
+
+        <div class="result hidden" id="result"></div>
+        <div id="investment-summary" class="hidden"></div>
+    </div>
+
+    <script>
+        function updateStepUpValue() {
+            const incrementType = document.getElementById("increment-type").value;
+            const incrementField = document.getElementById("increment");
+
+            if (incrementType === "fixed") {
+                incrementField.value = 100; // Default value for fixed step-up
+                incrementField.placeholder = "Enter the step-up value in ₹";
+            } else if (incrementType === "percentage") {
+                incrementField.value = 10; // Default value for percentage step-up
+                incrementField.placeholder = "Enter the step-up value in %";
+            }
+        }
+
+        function calculateInvestment() {
+            const years = parseInt(document.getElementById('years').value);
+            const initialInvestment = parseFloat(document.getElementById('initial-investment').value);
+            const increment = parseFloat(document.getElementById('increment').value);
+            const incrementType = document.getElementById('increment-type').value;
+            const annualReturn = parseFloat(document.getElementById('annual-return').value) / 100;
+
+            if (isNaN(years) || isNaN(initialInvestment) || isNaN(increment) || isNaN(annualReturn)) {
+                alert("Please fill in all fields with valid numbers.");
+                return;
+            }
+
+            let totalValue = 0;
+            let monthlyInvestment = initialInvestment;
+            let yearlySummary = [];
+
+            for (let year = 1; year <= years; year++) {
+                let yearlyInvestment = 0;
+
+                for (let month = 1; month <= 12; month++) {
+                    yearlyInvestment += monthlyInvestment;
+                    totalValue = (totalValue + monthlyInvestment) * (1 + annualReturn / 12);
+                }
+
+                yearlySummary.push({
+                    year,
+                    monthlyInvestment: monthlyInvestment,
+                    yearlyInvestment: yearlyInvestment
+                });
+
+                // Adjust monthly investment based on the selected step-up type
+                if (incrementType === "fixed") {
+                    monthlyInvestment += increment;
+                } else if (incrementType === "percentage") {
+                    monthlyInvestment *= (1 + increment / 100);
+                }
+            }
+
+            displayResults(totalValue, yearlySummary, years, incrementType, increment, initialInvestment, annualReturn);
+        }
+
+        function displayResults(totalValue, yearlySummary, years, incrementType, increment, initialInvestment, annualReturn) {
+            const resultDiv = document.getElementById('result');
+            const summaryDiv = document.getElementById('investment-summary');
+            const finalValue = Math.round(totalValue);
+
+            resultDiv.innerHTML = `Final Value after ${years} years: ₹${finalValue.toLocaleString()}<br>`;
+            resultDiv.innerHTML += `Final Value in words: ₹${convertNumberToWords(finalValue)}<br>`;
+
+            const searchParams = `
+                Years: ${years}<br>
+                Step-Up Type: ${incrementType}<br>
+                Step-Up Value: ₹${increment} ${incrementType === "percentage" ? "%" : ""}<br>
+                Initial Investment: ₹${initialInvestment}<br>
+                Annual Return Rate: ${annualReturn * 100}%<br>
+            `;
+            resultDiv.innerHTML += `<br>Search Parameters: <br>${searchParams}`;
+
+            let summaryHtml = `<table><tr><th>Year</th><th>Monthly Investment (₹)</th><th>Yearly Investment (₹)</th></tr>`;
+
+            yearlySummary.forEach(item => {
+                summaryHtml += `
+                    <tr>
+                        <td>${item.year}</td>
+                        <td>₹${item.monthlyInvestment.toFixed(2)}</td>
+                        <td>₹${item.yearlyInvestment.toFixed(2)}</td>
+                    </tr>`;
+            });
+
+            summaryHtml += `</table>`;
+            summaryDiv.innerHTML = summaryHtml;
+            summaryDiv.classList.remove('hidden');
+            resultDiv.classList.remove('hidden');
+        }
+
+        // Number to Words Converter
+        function convertNumberToWords(num) {
+    if (num === 0) return "Zero";
+
+    const below20 = [
+        "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
+        "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"
+    ];
+
+    const tens = [
+        "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"
+    ];
+
+    const thousands = [
+        "", "Thousand", "Million", "Billion", "Trillion"
+    ];
+
+    function helper(n) {
+        if (n === 0) return "";
+        if (n < 20) return below20[n - 1];
+        if (n < 100) return tens[Math.floor(n / 10) - 2] + (n % 10 ? " " + below20[n % 10 - 1] : "");
+        return below20[Math.floor(n / 100) - 1] + " Hundred" + (n % 100 ? " " + helper(n % 100) : "");
+    }
+
+    let result = "";
+    let thousandCounter = 0;
+
+    while (num > 0) {
+        if (num % 1000 !== 0) {
+            result = helper(num % 1000) + (thousands[thousandCounter] ? " " + thousands[thousandCounter] : "") + " " + result;
+        }
+        num = Math.floor(num / 1000);
+        thousandCounter++;
+    }
+
+    return result.trim();
+}
+
+// Example usage:
+console.log(convertNumberToWords(123456789));  // "One Hundred Twenty Three Million Four Hundred Fifty Six Thousand Seven Hundred Eighty Nine"
+
+
+        // Set default values for step-up type and value on page load
+        window.onload = updateStepUpValue;
+    </script>
+</body>
+</html>
